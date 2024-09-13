@@ -2,3 +2,4 @@ credentials\
 .envrc
 notebooks\
 data\
+__pycache__\
