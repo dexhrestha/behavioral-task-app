@@ -11,6 +11,7 @@ def test():
 def load(
     data_folder: str = "./",
     file_regex: str = "^data_",
+    exp_data: dict = {},
     from_pkl: bool = False,
     pickle: bool = False,
     save_format: str = "pkl",
@@ -66,17 +67,17 @@ def load(
     else:
         # Collect data
         dir_contents = os.listdir(data_folder)  # contents of the data folder
-        D = {}  # initalize dictionary D to store all the data
-        for filename in [fn for fn in dir_contents if re.search(file_regex, fn)]:
-            print(f"Reading {filename}")
-            with open(data_folder + filename) as open_file:  # prefix with data_folder
-                d = json.load(open_file)  # read into a small dictionary d
-                if not all([len(l) == 28 for l in d.keys()]):
-                    warnings.warn(
-                        "Keys do not look like Firebase UIDs! Check your files."
-                    )
-                D = {**D, **d}  # concatenate dictionaries
-
+        # D = {}  # initalize dictionary D to store all the data
+        # for filename in [fn for fn in dir_contents if re.search(file_regex, fn)]:
+        #     print(f"Reading {filename}")
+        #     with open(data_folder + filename) as open_file:  # prefix with data_folder
+        #         d = json.load(open_file)  # read into a small dictionary d
+        #         if not all([len(l) == 28 for l in d.keys()]):
+        #             warnings.warn(
+        #                 "Keys do not look like Firebase UIDs! Check your files."
+        #             )
+        #         D = {**D, **d}  # concatenate dictionaries
+        D = exp_data
         # Arrange it in a data frame
         df_trial = pd.DataFrame()
         df_subject = pd.DataFrame()

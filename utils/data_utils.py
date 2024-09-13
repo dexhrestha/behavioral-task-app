@@ -39,12 +39,13 @@ def get_participant_data(uid):
     db_ref = db.reference(f'/experiments/mental-nav/{uid}')
     file_path = f'data/{uid}.json'
 
-    with open(file_path, 'w') as json_file:
-        json.dump({uid:db_ref.get()}, json_file)
-
+    # with open(file_path, 'w') as json_file:
+    #     json.dump({uid:db_ref.get()}, json_file)
+    data = {uid:db_ref.get()}
     trial, subject, frame, state = ou.load(
                 data_folder='data/',
                 file_regex=f"^{uid}.json",
+                exp_data=data,
                 save_format=None
             )
 
