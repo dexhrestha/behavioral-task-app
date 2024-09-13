@@ -1,0 +1,51 @@
+
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
+import json
+from ouvrai import ouvrai as ou
+import os
+
+# Path to your service account key JSON file
+firebase_credentials = {
+    "type": "service_account",
+    "project_id": os.getenv("FIREBASE_PROJECT_ID"),
+    "private_key_id": os.getenv("FIREBASE_PRIVATE_KEY_ID"),
+    "private_key": os.getenv("FIREBASE_PRIVATE_KEY").replace("\\n", "\n"),
+    "client_email": os.getenv("FIREBASE_CLIENT_EMAIL"),
+    "client_id": os.getenv("FIREBASE_CLIENT_ID"),
+    "auth_uri": os.getenv("FIREBASE_AUTH_URI"),
+    "token_uri": os.getenv("FIREBASE_TOKEN_URI"),
+    "auth_provider_x509_cert_url": os.getenv("FIREBASE_AUTH_PROVIDER_CERT_URL"),
+    "client_x509_cert_url": os.getenv("FIREBASE_CLIENT_CERT_URL")
+}
+
+cred = credentials.Certificate(firebase_credentials)
+
+if not firebase_admin._apps:
+    firebase_admin.initialize_app(cred, {
+        'databaseURL': 'https://neuronepal-74c39-default-rtdb.firebaseio.com'
+    })
+
+db_ref = db.reference('/experiments/mental-nav')
+
+
+def get_participant_ids():
+    return list(db_ref.get(shallow=True).keys())
+
+
+def get_participant_data(uid):
+    # uid = 'mFnnnES08wMZ1qR97SxgzjX8xWH2'
+    db_ref = db.reference(f'/experiments/mental-nav/{uid}')
+    file_path = f'data/{uid}.json'
+
+    with open(file_path, 'w') as json_file:
+        json.dump({uid:db_ref.get()}, json_file)
+
+    trial, subject, frame, state = ou.load(
+                data_folder='data/',
+                file_regex=f"^{uid}.json",
+                save_format=None
+            )
+
+    return trial,subject,frame,state
