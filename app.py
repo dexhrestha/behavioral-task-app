@@ -39,6 +39,7 @@ def download_data_from_db(trial,subject,frame,state):
     output.seek(0)  # Reset pointer to the start of the stream
     return output   
 
+
 st.download_button(
     label="Download data",
     data=download_data_from_db(trial, subject, frame, state),

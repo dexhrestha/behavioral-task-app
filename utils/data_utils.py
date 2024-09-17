@@ -31,7 +31,13 @@ db_ref = db.reference('/experiments/mental-nav')
 
 
 def get_participant_ids():
-    return list(db_ref.get(shallow=True).keys())
+    all_keys = list(db_ref.get(shallow=True).keys())
+    valid_keys = []
+    for key in all_keys:
+        data = db_ref.child(key).get()  # Fetch the actual data for each key
+        if data['info'].get('completed',False):
+            valid_keys.append(key)
+    return valid_keys
 
 
 def get_participant_data(uid):
