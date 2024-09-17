@@ -42,11 +42,11 @@ def get_participant_data(uid):
     # with open(file_path, 'w') as json_file:
     #     json.dump({uid:db_ref.get()}, json_file)
     data = {uid:db_ref.get()}
+    data_folder = 'data/'
     trial, subject, frame, state = ou.load(
-                data_folder='data/',
+                data_folder=data_folder,
                 file_regex=f"^{uid}.json",
                 exp_data=data,
-                save_format=None
             )
 
     return trial,subject,frame,state
