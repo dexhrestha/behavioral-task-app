@@ -89,25 +89,28 @@ fig ,ax = plt.subplots()
 speed_1 = trial_sample[trial_sample['stepSize']==20]
 speed_2 = trial_sample[trial_sample['stepSize']==15]
 
-ax = speed_1.plot(y='trueTime',x='jitter_producedTime',kind='scatter',c='red',ax=ax,label='1x',alpha=0.7)
-ax = speed_2.plot(y='trueTime',x='jitter_producedTime',kind='scatter',c='blue',ax=ax,label='0.75x',alpha=0.7)
+ax = speed_1.plot(x='jitter_trueTime',y='producedTime',kind='scatter',c='red',ax=ax,label='1x',alpha=0.7)
+ax = speed_2.plot(x='jitter_trueTime',y='producedTime',kind='scatter',c='blue',ax=ax,label='0.75x',alpha=0.7)
 ax.tick_params(axis='x', rotation=45)
 ax.tick_params(axis='y', rotation=45)
 ax.legend(loc='upper left')
-ax.set_ylabel("True Time (s)")
-ax.set_xlabel("Produced Time (s)")
+ax.set_xlabel("True Time (s)")
+ax.set_ylabel("Produced Time (s)")
 st.subheader('Comparison of True and Produced Time')
 st.pyplot(fig)
 
 fig ,ax = plt.subplots()
 ax = speed_1.plot(y='reactionTime',x='jitter_trueTime',kind='scatter',c='red',ax=ax,label='1x',alpha=0.7)
 ax = speed_2.plot(y='reactionTime',x='jitter_trueTime',kind='scatter',c='blue',ax=ax,label='0.75x',alpha=0.7)
+
 ax.tick_params(axis='x', rotation=45)
 ax.tick_params(axis='y', rotation=45)
 ax.legend(loc='upper left')
 ax.set_xlabel("True Time (s)")
 ax.set_ylabel("Reaction Time (s)")
-ax.set_ylim([0,trial_sample['reactionTime'].max()+1])
+ax.plot([-6,6],[speed_1['reactionTime'].mean(),speed_1['reactionTime'].mean()],linestyle='dashed',c='red')
+ax.plot([-6,6],[speed_2['reactionTime'].mean(),speed_2['reactionTime'].mean()],linestyle='dashed',c='blue')
+ax.set_ylim([0,5])
 st.subheader('Reaction Time vs True Time')
 st.pyplot(fig)
 
