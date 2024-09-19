@@ -24,7 +24,7 @@ cred = credentials.Certificate(firebase_credentials)
 
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred, {
-        'databaseURL': 'https://neuronepal-74c39-default-rtdb.firebaseio.com'
+        'databaseURL': 'https://neuronepal2-1440a-default-rtdb.firebaseio.com/'
     })
 
 db_ref = db.reference('/experiments/mental-nav')
