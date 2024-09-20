@@ -127,7 +127,7 @@ ax.errorbar(x=speed_1_err_prod['trueTime_dir'],y=speed_1_err_prod['mean_produced
 ax = speed_2.plot(x='jitter_trueTime_dir',y='producedTime_dir',kind='scatter',c='blue',ax=ax,label='0.75x',alpha=0.5,s=5)
 ax.errorbar(x=speed_2_err_prod['trueTime_dir'],y=speed_2_err_prod['mean_produced_time'],c='blue',fmt='o',alpha=0.5,yerr=speed_2_err_prod['std_produced_time'])
 
-plt.plot([-6,6],[-6,6],c='grey',linewidth=0.5,linestyle=(5,(10,3)))
+plt.plot([-6,6],[-6,6],c='grey',linewidth=0.5,linestyle=(5,(10,3)),ax=ax)
 
 
 ax.tick_params(axis='x', rotation=45)
