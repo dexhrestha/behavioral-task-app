@@ -27,7 +27,7 @@ if not firebase_admin._apps:
         'databaseURL': 'https://neuronepal2-1440a-default-rtdb.firebaseio.com/'
     })
 
-db_ref = db.reference('/experiments/mental-nav')
+db_ref = db.reference('/experiments/mentalnavigation')
 
 
 def get_participant_ids():
