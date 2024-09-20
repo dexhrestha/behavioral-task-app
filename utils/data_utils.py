@@ -42,7 +42,7 @@ def get_participant_ids():
 
 def get_participant_data(uid):
     # uid = 'mFnnnES08wMZ1qR97SxgzjX8xWH2'
-    db_ref = db.reference(f'/experiments/mental-nav/{uid}')
+    db_ref = db.reference(f'/experiments/mentalnavigation/{uid}')
     file_path = f'data/{uid}.json'
 
     # with open(file_path, 'w') as json_file:
