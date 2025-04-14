@@ -335,7 +335,7 @@ weber_df['trend'] = trend_model.predict(X)
 fig = plt.figure(figsize=(8, 5))
 for speed in unique_speeds:
     sns.regplot(data=weber_df[weber_df['speed']==speed], x='speed', y='weber_coefficient',color=color_palette[speed], scatter_kws={'s': 60}, line_kws={'color': 'red'},ci=False)
-sns.scatterplot(weber_df,x='speed',y='trend',color='black')
+# sns.scatterplot(weber_df,x='speed',y='trend',color='black')
 plt.title('Weber Coefficient vs. Speed with Regression Fit')
 plt.ylabel('Weber Coefficient (k)')
 plt.xlabel('Speed')
@@ -345,6 +345,6 @@ plt.show()
 
 st.pyplot(fig)
 
-fig = plt.figure()
-df['speed'].value_counts().plot(kind='bar')
-st.pyplot(fig)
+# fig = plt.figure()
+# df['speed'].value_counts().plot(kind='bar')
+# st.pyplot(fig)
