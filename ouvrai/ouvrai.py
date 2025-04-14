@@ -66,7 +66,7 @@ def load(
             return
     else:
         # Collect data
-        dir_contents = os.listdir(data_folder)  # contents of the data folder
+        # dir_contents = os.listdir(data_folder)  # contents of the data folder
         # D = {}  # initalize dictionary D to store all the data
         # for filename in [fn for fn in dir_contents if re.search(file_regex, fn)]:
         #     print(f"Reading {filename}")
@@ -140,22 +140,22 @@ def load(
         df_frame["t"] = df_frame["t"].astype(float)
 
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        if pickle or save_format in {"pkl", ".pkl", "pickle"}:
-            df_trial.to_pickle(data_folder + save_name + "_trial_" + ts + ".pkl")
-            df_subject.to_pickle(data_folder + save_name + "_subject_" + ts + ".pkl")
-            df_frame.to_pickle(data_folder + save_name + "_frame_" + ts + ".pkl")
-            df_state.to_pickle(data_folder + save_name + "_state_" + ts + ".pkl")
-        elif save_format in {"csv", "txt", ".csv", ".txt"}:
-            df_trial.to_csv(data_folder + save_name + "_trial_" + ts + ".csv")
-            df_subject.to_csv(data_folder + save_name + "_subject_" + ts + ".csv")
-            df_frame.to_csv(data_folder + save_name + "_frame_" + ts + ".csv")
-            df_state.to_csv(data_folder + save_name + "_state_" + ts + ".csv")
-        elif save_format in {"xls", "xlsx", ".xls", ".xlsx", "excel"}:
-            with pd.ExcelWriter(data_folder + save_name + "_" + ts + ".xlsx") as writer:
-                df_trial.to_excel(writer, "trial")
-                df_subject.to_excel(writer, "subject")
-                df_frame.to_excel(writer, "frame")
-                df_state.to_excel(writer, "state")
+        # if pickle or save_format in {"pkl", ".pkl", "pickle"}:
+        #     df_trial.to_pickle(data_folder + save_name + "_trial_" + ts + ".pkl")
+        #     df_subject.to_pickle(data_folder + save_name + "_subject_" + ts + ".pkl")
+        #     df_frame.to_pickle(data_folder + save_name + "_frame_" + ts + ".pkl")
+        #     df_state.to_pickle(data_folder + save_name + "_state_" + ts + ".pkl")
+        # elif save_format in {"csv", "txt", ".csv", ".txt"}:
+        #     df_trial.to_csv(data_folder + save_name + "_trial_" + ts + ".csv")
+        #     df_subject.to_csv(data_folder + save_name + "_subject_" + ts + ".csv")
+        #     df_frame.to_csv(data_folder + save_name + "_frame_" + ts + ".csv")
+        #     df_state.to_csv(data_folder + save_name + "_state_" + ts + ".csv")
+        # elif save_format in {"xls", "xlsx", ".xls", ".xlsx", "excel"}:
+        #     with pd.ExcelWriter(data_folder + save_name + "_" + ts + ".xlsx") as writer:
+        #         df_trial.to_excel(writer, "trial")
+        #         df_subject.to_excel(writer, "subject")
+        #         df_frame.to_excel(writer, "frame")
+        #         df_state.to_excel(writer, "state")
 
         df_frame.reset_index(drop=True, inplace=True)
 

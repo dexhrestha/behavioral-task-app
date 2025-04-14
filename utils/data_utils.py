@@ -5,6 +5,7 @@ from firebase_admin import db
 import json
 from ouvrai import ouvrai as ou
 import os
+import pandas as pd
 
 # Path to your service account key JSON file
 firebase_credentials = {
@@ -24,13 +25,13 @@ cred = credentials.Certificate(firebase_credentials)
 
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred, {
-        'databaseURL': 'https://neuronepal2-1440a-default-rtdb.firebaseio.com/'
+        'databaseURL': 'https://neuronepal-74c39-default-rtdb.firebaseio.com/'
     })
 
-db_ref = db.reference('/experiments/mentalnavigation')
 
 
-def get_participant_ids():
+def get_participant_ids(project_name):
+    db_ref = db.reference(f'/experiments/{project_name}')
     all_keys = list(db_ref.get(shallow=True).keys())
     valid_keys = []
     for key in all_keys:
@@ -39,20 +40,43 @@ def get_participant_ids():
             valid_keys.append(key)
     return valid_keys
 
+def download_participant_data(project_name,uid):
+    if not uid:
+        return False
+    
+    file_path = f'data_{project_name}/{uid}.json'
+    
+    if not os.path.exists(os.path.dirname(file_path)):
+        os.mkdir(os.path.dirname(file_path))
 
-def get_participant_data(uid):
-    # uid = 'mFnnnES08wMZ1qR97SxgzjX8xWH2'
-    db_ref = db.reference(f'/experiments/mentalnavigation/{uid}')
-    file_path = f'data/{uid}.json'
+    if not os.path.exists(file_path):
+        db_ref = db.reference(f'/experiments/{project_name}/{uid}')
+        data = {uid:db_ref.get()}
+        if uid and data.get(uid):
+            with open(file_path, 'w',encoding='utf-8') as json_file:
+                json.dump(data, json_file, indent = 4, ensure_ascii = False)
+        else:
+            return False
+    return file_path
 
-    # with open(file_path, 'w') as json_file:
-    #     json.dump({uid:db_ref.get()}, json_file)
-    data = {uid:db_ref.get()}
-    data_folder = 'data/'
-    trial, subject, frame, state = ou.load(
-                data_folder=data_folder,
-                file_regex=f"^{uid}.json",
-                exp_data=data,
-            )
+def get_participant_data(project_name,uid):
+
+    json_path = download_participant_data(project_name,uid)
+
+    assert os.path.exists(json_path), "Participant data not found"
+
+    trial = pd.DataFrame()
+    subject = pd.DataFrame()
+    frame = pd.DataFrame()
+    state = pd.DataFrame()
+    
+    try:
+        with open(json_path, 'r') as json_file:
+            data= json.load(json_file)
+            trial,subject,frame,state = ou.load(exp_data=data)
+    except Exception as e :
+        print("Cannot read file. Error :" + str(e))
 
     return trial,subject,frame,state
+
+    

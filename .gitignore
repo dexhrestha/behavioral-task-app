@@ -1,4 +1,10 @@
 .envrc
 notebooks
-data
+/data*
+/data*
 __pycache__
+*.xlsx
+*.mat
+*.ipynb
+/pages_dev
+/utils
