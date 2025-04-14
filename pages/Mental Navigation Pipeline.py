@@ -9,6 +9,18 @@ import pandas as pd
 import numpy as np
 from matplotlib import cm
 import matplotlib.pyplot as plt
+
+from matplotlib.colors import LinearSegmentedColormap
+
+# Define the bluered colormap
+colors = [
+    (0.0, "#ff0000"),
+    (1.0, "#0000ff"),
+]
+bluered_cmap = LinearSegmentedColormap.from_list("plotly_bluered", colors)
+
+ 
+
 import seaborn as sns
 from pandas.api.types import (
     is_categorical_dtype,
@@ -130,23 +142,44 @@ stats['absta_normalized'] = (stats['absta'] - stats['absta'].min()) / (stats['ab
 
 # Compute the coefficients using the normalized version
 stats['cv'] = stats['std'] / stats['mean']
-stats['weber'] = stats['std'] / stats['absta']
 
+stats['absta_sq'] = stats['absta'] ** 2
+
+# Step 2: Group by speed and fit linear models
+weber_by_speed = []
+
+# Group by 'speed' and fit the same model per group
+for speed, group in stats.groupby('speed'):
+    group['mean_sq'] = group['mean'] ** 2
+    group['var'] = group['std'] ** 2
+
+    X = sm.add_constant(group['mean_sq'])
+    y = group['var']
+
+    model = sm.OLS(y, X).fit()
+    k = model.params['mean_sq']
+    weber_by_speed.append({'speed': speed, 'weber_coefficient': k})
+
+# Convert to DataFrame for plotting
+weber_df = pd.DataFrame(weber_by_speed)
+st.dataframe(weber_df)
+ 
 
 st.dataframe(stats)
 # Get 6 evenly spaced colors from the RdBu colormap
-unique_speeds = stats['speed'].unique()
+unique_speeds = stats['speed'].sort_values().unique()
 n_colors = len(unique_speeds)
-
+abs_palette = [bluered_cmap(i) for i in np.linspace(0, 1, n_colors)][::-1]
+color_palette = dict(zip(unique_speeds,abs_palette))
+sns.set_palette(abs_palette)
 # Sample from RdBu excluding the center (avoid white)
 # e.g., use 0 to 0.4 and 0.6 to 1 to skip the middle
 # Create a linspace that avoids the middle
 sample_points = np.linspace(0, 0.4, n_colors // 2).tolist() + np.linspace(0.6, 1, n_colors - n_colors // 2).tolist()
 
-cmap = cm.get_cmap('RdBu')
 colors = [
     f'rgb({int(r*255)},{int(g*255)},{int(b*255)})'
-    for r, g, b, _ in [cmap(p) for p in sample_points]
+    for r, g, b, _ in [bluered_cmap(p) for p in sample_points]
 ]
 colors = colors[::-1]
 
@@ -161,7 +194,7 @@ for i, speed in enumerate(unique_speeds):
     
     fig.add_trace(
         go.Scatter(
-            x=filtered['absta'],
+            x=filtered['mean'],
             y=filtered['std'],
             mode='lines+markers',
             name=f'Speed: {speed}',
@@ -173,13 +206,36 @@ for i, speed in enumerate(unique_speeds):
     )
 
 fig.update_layout(
-    title="Line Plot by Speed Group with RdBu Colormap",
-    xaxis_title="absta",
-    yaxis_title="std"
+    title="Standard deviation vs Mean of produced time",
+    xaxis_title="Time (s)",
+    yaxis_title="SD"
 )
 
 
 st.plotly_chart(fig)
+
+fig, ax = plt.subplots()
+ 
+filtered_speeds = st.multiselect("speed", unique_speeds, unique_speeds)
+
+if filtered_speeds:
+    filtered_stats = stats[stats['speed'].isin(filtered_speeds)]
+else:
+    filtered_stats = stats.copy(deep=True)
+
+# Plot a regression line for each selected speed
+for speed in  filtered_speeds:
+    sns.regplot(data=filtered_stats[filtered_stats['speed']==speed], x='mean', y='std', label=speed, ax=ax, color=color_palette[speed] , ci=False,scatter=True,   
+            scatter_kws={'s': 40, 'alpha': 0.6},  # make points visible
+            line_kws={'linewidth': 2})
+
+ax.legend()
+ax.set_title("Regression plot for standard deviation vs mean of produced time")
+ax.set_xlabel("Time (s)")
+ax.set_ylabel("SD")
+st.pyplot(fig)
+
+
 
 st.markdown("""
             
@@ -208,7 +264,7 @@ for i, speed in enumerate(unique_speeds):
     
     fig.add_trace(
         go.Scatter(
-            x=filtered['absta'],
+            x=filtered['mean'],
             y=filtered['cv'],
             mode='lines+markers',
             name=f'Speed: {speed}',
@@ -220,48 +276,13 @@ for i, speed in enumerate(unique_speeds):
     )
 
 fig.update_layout(
-    title="Line Plot by Speed Group with RdBu Colormap",
-    xaxis_title="absta",
-    yaxis_title="cv"
+    title="CV (Slope vs mean time) vs mean of produced time ",
+    xaxis_title="Time (s)",
+    yaxis_title="CV"
 )
 
 
 st.plotly_chart(fig)
-
-
-st.markdown("### 3. Relation between Weber Coefficient and True time")
-st.markdown("Now, we explore how the Weber Coefficient changes with true time. This can reveal whether the relative timing uncertainty scales consistently across different speeds.")
-
-# Create figure for Weber Coefficient
-fig = go.Figure()
-
-# Use the same colors and speed ordering
-for i, speed in enumerate(unique_speeds):
-    filtered = stats[stats['speed'] == speed]
-
-    fig.add_trace(
-        go.Scatter(
-            x=filtered['absta'],
-            y=filtered['weber'],  # <-- Make sure this column exists
-            mode='lines+markers',
-            name=f'Speed: {speed}',
-            line=dict(color=colors[i], width=3),
-            marker=dict(size=6, color=colors[i]),
-            hoverinfo='x+y+name',
-            showlegend=True
-        )
-    )
-
-fig.update_layout(
-    title="Weber Coefficient vs Time",
-    xaxis_title="absta",
-    yaxis_title="Weber Coefficient"
-)
-
-
-st.plotly_chart(fig)
-
-st.markdown("As speed increases, the slope of the Weber Coefficient curve increases, suggesting that relative timing precision deteriorates. In other words, participants become less consistent in their timing as speed increases, particularly at longer durations. This indicates that higher speeds may impose greater cognitive or motor demands, limiting the brain's ability to maintain precise temporal estimates.")
 
 st.markdown("### 3. Relation between Weber Coefficient and Speed")
 
@@ -269,8 +290,7 @@ st.markdown("### 3. Relation between Weber Coefficient and Speed")
 fig, ax = plt.subplots()
 # Create a scatter plot
  
-abs_palette = sns.color_palette('RdBu', n_colors=n_colors)[::-1]
-
+ 
 
 # # Assuming 'stats' is your dataframe and you have columns 'speed', 'weber'
 # sns.scatterplot(data=stats, x='speed', y='weber', ax=ax, hue='speed', palette=abs_palette[::-1])
@@ -280,62 +300,51 @@ abs_palette = sns.color_palette('RdBu', n_colors=n_colors)[::-1]
 # For simplicity, let's use the standard deviation of 'weber' grouped by 'speed' as an example of error.
 
 # Calculate mean and std deviation for each 'speed'
-grouped_stats = stats.groupby('speed')['weber'].agg(['mean', 'std'])
+ 
 
-# Loop through each unique 'speed' value and add error bars
-for i,speed in enumerate(grouped_stats.index):
-    mean_value = grouped_stats.loc[speed, 'mean']
-    std_value = grouped_stats.loc[speed, 'std']
-    
-    # Plotting error bars (yerr is the error bars)
-    ax.errorbar(speed, mean_value, yerr=std_value, fmt='o', color=abs_palette[i], capsize=5)
-# Display the plot in the Streamlit app
-plt.ylabel("Mean Weber Fraction")
-plt.xlabel("Speed")
-plt.title("Weber fraction vs speed")
-st.pyplot(fig)
-
-
-
+fig, ax = plt.subplots()
 grouped_stats = stats.groupby('speed')['cv'].agg(['mean', 'std'])
-
 # Loop through each unique 'speed' value and add error bars
-for i,speed in enumerate(grouped_stats.index):
+for i,speed in enumerate(unique_speeds):
     mean_value = grouped_stats.loc[speed, 'mean']
     std_value = grouped_stats.loc[speed, 'std']
-    
+    print(mean_value,std_value)
     # Plotting error bars (yerr is the error bars)
     ax.errorbar(speed, mean_value, yerr=std_value, fmt='o', color=abs_palette[i], capsize=5)
 # Display the plot in the Streamlit app
-plt.ylabel("Mean Coeff of variation")
+plt.ylabel("CV")
 plt.xlabel("Speed")
-plt.title("Coeff of variation vs speed")
+plt.title("CV vs speed")
 st.pyplot(fig)
 
 #slope of variances vs t squared
 st.markdown("""
             # Weber's Coefficient as slope of variance vs t^2 
             """)
-stats['absta_sq'] = stats['absta'] ** 2
 
-# Step 2: Group by speed and fit linear models
-models = {}
+ 
 
-for speed, group in stats.groupby('speed'):
-    X = group['absta_sq']
-    y = group['cv']
-    
-    # Add constant term for intercept
-    X = sm.add_constant(X)
-    
-    # Fit linear model
-    model = sm.OLS(y, X).fit()
-    models[speed] = model
-    stats.loc[stats['speed'] == speed,'slope'] = model.params['absta_sq']
+X = weber_df['speed']
+y = weber_df['weber_coefficient']
+trend_model = sm.OLS(y, X).fit()
 
-stats['slope'] = stats['slope'] * 1000
+# Predict values for plotting the trend line
+weber_df['trend'] = trend_model.predict(X)
 
-fig, ax = plt.subplots()
-# sns.scatterplot(data=stats.groupby('speed')['slope'].max().reset_index(name='slope'),x='speed',y='slope',hue='speed',palette='RdBu',ax=ax)
-sns.pointplot(data=stats.groupby('speed')['slope'].max().reset_index(name='slope'),x='speed',y='slope',hue='speed',palette=abs_palette,ax=ax)
+# Plotting with regression line and confidence interval (error bars using bootstrap)
+fig = plt.figure(figsize=(8, 5))
+for speed in unique_speeds:
+    sns.regplot(data=weber_df[weber_df['speed']==speed], x='speed', y='weber_coefficient',color=color_palette[speed], scatter_kws={'s': 60}, line_kws={'color': 'red'},ci=False)
+sns.scatterplot(weber_df,x='speed',y='trend',color='black')
+plt.title('Weber Coefficient vs. Speed with Regression Fit')
+plt.ylabel('Weber Coefficient (k)')
+plt.xlabel('Speed')
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.tight_layout()
+plt.show()
+
+st.pyplot(fig)
+
+fig = plt.figure()
+df['speed'].value_counts().plot(kind='bar')
 st.pyplot(fig)
