@@ -11,14 +11,14 @@ from utils.data_utils import get_participant_data,get_participant_ids
 from io import BytesIO
  
 
-st.set_page_config(page_title="Self Order Pointing Task Dashboard")
+st.set_page_config(page_title="Self Order Pointing")
 project_name = 'sopt'
 experiment_URL = "http://selforderedpointingtask.firebaseapp.com/?ver="
 # Simulating data for the behavioral task
 # participant_ids = get_participant_ids(project_name)
 
 # Title of the app
-st.title('Self Order Pointing Task Dashboard ')
+st.title('Self Order Pointing Task')
  
 
 # Sidebar for user selection

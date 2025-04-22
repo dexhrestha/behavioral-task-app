@@ -11,8 +11,7 @@ st.title('Self Order Pointing Task Dashboard ')
 st.text("There are four versions of this task.")
 st.markdown("Experiment Links")
 
-objects,abstracts = st.columns(2)
-words,nonwords = st.columns(2)
+objects,abstracts,words,nonwords = st.columns(4)
 with objects:
     st.link_button("Objects",experiment_URL+"objects")
     st.image("images/object.jpg",use_column_width=True,clamp=True,width=0.5)
