@@ -13,22 +13,20 @@ from io import BytesIO
 
 st.set_page_config(page_title="Self Order Pointing Task Dashboard")
 project_name = 'sopt'
+experiment_URL = "http://selforderedpointingtask.firebaseapp.com/?ver="
 # Simulating data for the behavioral task
 # participant_ids = get_participant_ids(project_name)
 
 # Title of the app
 st.title('Self Order Pointing Task Dashboard ')
-
+ 
 
 # Sidebar for user selection
 # selected_user = st.sidebar.selectbox('Select a Participant', participant_ids)
 # st.markdown(f"### Subject ID:  \n **{selected_user}**")
 selected_user = st.text_input("Select a user")
 
-try:
-    trial, subject, frame, state = get_participant_data(project_name,selected_user)
-except AssertionError:
-    st.write("Participant data not found!!!")
+
 
 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -45,13 +43,18 @@ def download_data_from_db(trial,subject,frame,state):
 
 @st.cache_data
 def process_trials(df):
-    df['responseTime'] = df['finishTime']-df['goCueTime']
+    df['responseTime'] = df['timeTaken']
     df['prev_selected'] = df['prev_selected'].fillna(0).astype(int)
     df['error'] = df.duplicated(subset=['blockTrial','selectedImage'],keep='first')
 
     return df
 
+
 if selected_user:
+    try:
+        trial, subject, frame, state = get_participant_data(project_name,selected_user)
+    except AssertionError:
+        st.write("Participant data not found!!!")
 
     processed_trials = process_trials(trial)
     st.download_button(
@@ -60,7 +63,7 @@ if selected_user:
         file_name=f"{selected_user}_{ts}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
+    processed_trials = processed_trials[['blockNumber','blockTrial','trialNumber','finishTime','goCueTime','responseTime','error','subject','uid','numTiles','pageNumber']]
     st.table(processed_trials)
 
     
@@ -75,6 +78,7 @@ if selected_user:
     ax.set_title("Number of Errors Across Trials", fontsize=14)
     ax.set_xlabel("Trials (Block Trial)", fontsize=12)
     ax.set_ylabel("Error Count", fontsize=12)
+    
 
     # Set x-tick labels as blockTrial values
     ax.set_xticklabels([f"{idx[1]}" for idx in error_data.index], rotation=0, ha="right")
