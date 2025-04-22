@@ -14,15 +14,15 @@ st.markdown("Experiment Links")
 objects,abstracts,words,nonwords = st.columns(4)
 with objects:
     st.link_button("Objects",experiment_URL+"objects")
-    st.image("images/object.jpg",use_column_width=True,clamp=True,width=0.5)
+    st.image("images/object.jpg",use_container_width=True,clamp=True,width=0.5)
 
 with abstracts:
     st.link_button("Abstracts",experiment_URL+"abstracts")
-    st.image("images/abstract.jpg",use_column_width=True,clamp=True,width=0.5)
+    st.image("images/abstract.jpg",use_container_width=True,clamp=True,width=0.5)
 
 with words:
     st.link_button("Words",experiment_URL+"words")
-    st.image("images/word.jpg",use_column_width=True,clamp=True,width=0.5)
+    st.image("images/word.jpg",use_container_width=True,clamp=True,width=0.5)
 
 # with nonwords:
 #     st.link_button("Non Words",experiment_URL+"nonwords")
