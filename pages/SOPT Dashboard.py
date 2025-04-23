@@ -43,7 +43,6 @@ def download_data_from_db(trial,subject,frame,state):
 
 @st.cache_data
 def process_trials(df):
-    df['responseTime'] = df['timeTaken']
     df['prev_selected'] = df['prev_selected'].fillna(0).astype(int)
     df['error'] = df.duplicated(subset=['blockTrial','selectedImage'],keep='first')
 
