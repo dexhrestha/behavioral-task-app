@@ -6,7 +6,7 @@ import seaborn as sns
 import random
 from datetime import datetime
 
-from utils.data_utils import get_participant_data,get_participant_ids
+from utils.data_utils import get_participant_data
 
 from io import BytesIO
  
