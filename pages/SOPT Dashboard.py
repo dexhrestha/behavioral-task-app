@@ -64,6 +64,15 @@ if selected_user:
     )
     processed_trials = processed_trials[['trialNumber','blockNumber','blockTrial','responseTime','error','numTiles','pageNumber']]
     processed_trials['responseTime_s'] = processed_trials['responseTime']/1000.
+
+    total_time, total_trials = st.columns(2)
+
+    with total_time:
+        st.metric("Total Tine",str(round(float(processed_trials['responseTime_s'].sum()),2))+' s')
+
+    with total_trials:
+        st.metric("Total Trials",processed_trials.shape[0])
+
     st.table(processed_trials)
 
     
