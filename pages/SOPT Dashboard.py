@@ -62,7 +62,8 @@ if selected_user:
         file_name=f"{selected_user}_{ts}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-    processed_trials = processed_trials[['blockNumber','blockTrial','trialNumber','finishTime','goCueTime','responseTime','error','subject','uid','numTiles','pageNumber']]
+    processed_trials = processed_trials[['trialNumber','blockNumber','blockTrial','responseTime','error','numTiles','pageNumber']]
+    processed_trials['responseTime_s'] = processed_trials['responseTime']/1000.
     st.table(processed_trials)
 
     
