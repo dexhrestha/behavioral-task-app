@@ -7,9 +7,8 @@ experiment_URL = "http://selforderedpointingtask.firebaseapp.com/?ver="
 # participant_ids = get_participant_ids(project_name)
 
 # Title of the app
-st.title('Self Order Pointing Task Dashboard ')
-st.text("There are four versions of this task.")
-st.markdown("Experiment Links")
+st.title('Self Order Pointing Task Generator ')
+st.text("There are four versions of this task. You can generate your own version of the task by selecting the parameters below.")
 
 objects,abstracts,words,nonwords = st.columns(4)
 with objects:
@@ -24,6 +23,15 @@ with words:
     st.link_button("Words",experiment_URL+"words")
     st.image("images/word.jpg",use_container_width=True,clamp=True,width=0.5)
 
-# with nonwords:
-#     st.link_button("Non Words",experiment_URL+"nonwords")
-#     st.image("images/nonword.jpg",use_column_width=True,clamp=True,width=0.5)
+with nonwords:
+    st.link_button("Non Words",experiment_URL+"nonwords")
+    st.image("images/nonword.jpg",use_container_width=True,clamp=True,width=0.5)
+
+with st.form("experiment"):
+    versions = st.multiselect("Versions",['Abstracts','Objects',"Words","Nonwords"])
+    tiles = st.multiselect("Tiles",[4,6,8,10,12])
+    submitted = st.form_submit_button("Create a new experiment")
+
+if submitted:
+    st.link_button("Go to experiment",experiment_URL)
+
