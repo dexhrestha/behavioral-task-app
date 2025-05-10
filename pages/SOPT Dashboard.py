@@ -54,55 +54,71 @@ if selected_user:
         trial, subject, frame, state = get_participant_data(project_name,selected_user)
     except AssertionError:
         st.write("Participant data not found!!!")
+    if trial.shape[0]>0:
+        processed_trials = process_trials(trial)
+        st.download_button(
+            label="Download data",
+            data=download_data_from_db(processed_trials, subject, frame, state),
+            file_name=f"{selected_user}_{ts}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        processed_trials = processed_trials[['trialNumber','tileBlockIndex','prev_selected','selectedImage','blockTrial','responseTime','error','numTiles','pageNumber']]
+        processed_trials.loc[:,'responseTime_s'] = processed_trials['responseTime']/1000.
 
-    processed_trials = process_trials(trial)
-    st.download_button(
-        label="Download data",
-        data=download_data_from_db(processed_trials, subject, frame, state),
-        file_name=f"{selected_user}_{ts}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-    processed_trials = processed_trials[['trialNumber','blockNumber','blockTrial','responseTime','error','numTiles','pageNumber']]
-    processed_trials['responseTime_s'] = processed_trials['responseTime']/1000.
+        total_time, total_trials = st.columns(2)
 
-    total_time, total_trials = st.columns(2)
+        with total_time:
+            st.metric("Total Tine",str(round(float(processed_trials['responseTime_s'].sum()),2))+' s')
 
-    with total_time:
-        st.metric("Total Tine",str(round(float(processed_trials['responseTime_s'].sum()),2))+' s')
+        with total_trials:
+            st.metric("Total Trials",processed_trials.shape[0])
 
-    with total_trials:
-        st.metric("Total Trials",processed_trials.shape[0])
+        # st.table(processed_trials)
 
-    st.table(processed_trials)
+        
+        # Create the figure and axis
+        fig, ax = plt.subplots(figsize=(10, 5))  # Adjust size if needed
 
-    
-    # Create the figure and axis
-    fig, ax = plt.subplots(figsize=(10, 5))  # Adjust size if needed
-
-    # Generate the bar plot
-    error_data = processed_trials.groupby(['numTiles', 'blockTrial'])['error'].sum()
-    error_data.plot(kind='bar', ax=ax)
-
-    # Set title and labels
-    ax.set_title("Number of Errors Across Trials", fontsize=14)
-    ax.set_xlabel("Trials (Block Trial)", fontsize=12)
-    ax.set_ylabel("Error Count", fontsize=12)
-    
-
-    # Set x-tick labels as blockTrial values
-    ax.set_xticklabels([f"{idx[1]}" for idx in error_data.index], rotation=0, ha="right")
-
-    st.markdown("## Sample Visualizations")
-    # Display the plot in Streamlit
-    st.pyplot(fig)
-    
+        # Generate the bar plot
+ 
+        error_data = processed_trials.groupby(['numTiles', 'blockTrial'])['error'].sum().reset_index()
 
 
+        # Get unique hue values
+        unique_tiles = sorted(error_data['numTiles'].unique())
+        n_colors = len(unique_tiles)
 
+        # Choose a colormap
+        cmap = plt.get_cmap('viridis', n_colors)  # or 'viridis', 'plasma', etc.
 
-# ids :
-    # JKqowBchDRXfPI59CWjfJN46Hz02
-    # 10V6r5kdjTTwtBDacmjqtYsw3512
-    # ujYMAO8B8KhUdB6ZHmY333nQSIu1
-    # 35USuHJIWAojvzNvYCegnQQvQKCO
-    
+        # Map each hue level to a color
+        palette = {tile: cmap(i) for i, tile in enumerate(unique_tiles)}
+
+        # Plot with custom palette
+        sns.barplot(data=error_data, x='blockTrial', y='error', hue='numTiles', palette=palette, ax=ax)
+
+ 
+            
+
+        # Set title and labels
+        ax.set_title("Number of Errors Across Trials", fontsize=14)
+        ax.set_xlabel("Trials (Block Trial)", fontsize=12)
+        ax.set_ylabel("Error Count", fontsize=12)
+        
+
+        # Set x-tick labels as blockTrial values
+        # ax.set_xticklabels([f"{idx[1]}" for idx in error_data.index], rotation=0, ha="right")
+
+        st.markdown("## Performance Report")
+        # Display the plot in Streamlit
+        st.pyplot(fig)
+        
+    else:
+        st.write("Empty Dataframe")
+
+    # ids :
+        # JKqowBchDRXfPI59CWjfJN46Hz02
+        # 10V6r5kdjTTwtBDacmjqtYsw3512
+        # ujYMAO8B8KhUdB6ZHmY333nQSIu1
+        # 35USuHJIWAojvzNvYCegnQQvQKCO
+        

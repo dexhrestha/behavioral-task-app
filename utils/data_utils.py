@@ -7,7 +7,6 @@ from ouvrai import ouvrai as ou
 import os
 import pandas as pd
 
-# Path to your service account key JSON file
 firebase_credentials = {
     "type": "service_account",
     "project_id": os.getenv("FIREBASE_PROJECT_ID"),

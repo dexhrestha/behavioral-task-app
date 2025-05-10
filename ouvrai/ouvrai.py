@@ -52,7 +52,6 @@ def load(
 
     # Strip any leading/trailing quotes added when running from command line (see ouvrai-wrangle.js)
     data_folder = data_folder.lstrip("'").rstrip("'")
-
     if from_pkl:
         try:
             df_trial = pd.read_pickle(data_folder + "df_trial.pkl")
@@ -105,7 +104,7 @@ def load(
         # Per-statechange columns should be the same length as "stateChange"
         numstatechanges_reftrial = len(reftrial["stateChange"])
         statechange_columns = [
-            c for c in reftrial.index if len(reftrial[c]) == numstatechanges_reftrial
+            c for c in reftrial.index if len(reftrial[c]) == numstatechanges_reftrial and c.startswith('state')
         ]
         print(f"State change variables are: {statechange_columns}")
         # Pop these columns from df_trial and reassemble them in their own DataFrames
